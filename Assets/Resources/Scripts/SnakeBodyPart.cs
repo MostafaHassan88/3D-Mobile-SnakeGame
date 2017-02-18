@@ -25,54 +25,48 @@ public class SnakeBodyPart : MonoBehaviour {
 	}
 
 	public void handleBodyPartMove(){
+		// if prevBodyPart is null then this is the head 
 		if (prevBodyPart == null) {
-			if (turnPositions.Count > 0 && V3Equal (transform.position, turnPositions [0].getTurnPos ())) {
-				transform.Rotate (Vector3.up, turnPositions [0].getDirecKey () == KeyCode.LeftArrow ? -90 : 90);
-				if (transform.eulerAngles.y == 90 || transform.eulerAngles.y == 270) {
-					transform.position = new Vector3 (transform.position.x, transform.position.y, turnPositions [0].getTurnPos ().z);
-				} else {
-					transform.position = new Vector3 (turnPositions [0].getTurnPos ().x, transform.position.y, transform.position.z);
-				}
-				turnPositions.RemoveAt (0);
-			}
-
-			transform.position += (transform.rotation * Vector3.forward * movementSpeed);
+			handleSnakeHeadMovement ();
 		} else {
-			float dis = Vector3.Distance (prevBodyPart.position, transform.position);
-
-			Vector3 newPos = prevBodyPart.position;
-			newPos.y = HeadPart.position.y;
-
-			float T = dis / minDistance * movementSpeed;
-
-			transform.position = Vector3.Lerp (transform.position, newPos, T);
-			transform.rotation = Quaternion.Slerp (transform.rotation, prevBodyPart.rotation, T);
+			handleBodyPartMovement ();
 		}
 	}
+		
+	// the head always move forward and is reponsible for the turns and the rest of the body follows 
+	private void handleSnakeHeadMovement(){
+		if (turnPositions.Count > 0 && V3Equal (transform.position, turnPositions [0].getTurnPos ())) {
+			transform.Rotate (Vector3.up, turnPositions [0].getDirecKey () == KeyCode.LeftArrow ? -90 : 90);
+			if (transform.eulerAngles.y == 90 || transform.eulerAngles.y == 270) {
+				transform.position = new Vector3 (transform.position.x, transform.position.y, turnPositions [0].getTurnPos ().z);
+			} else {
+				transform.position = new Vector3 (turnPositions [0].getTurnPos ().x, transform.position.y, transform.position.z);
+			}
+			turnPositions.RemoveAt (0);
+		}
 
+		transform.position += (transform.rotation * Vector3.forward * movementSpeed);
+	}
+
+	// this method is reponsible for bodyPart to follow each other keeping the minDistance set between them
+	private void handleBodyPartMovement(){
+		float dis = Vector3.Distance (prevBodyPart.position, transform.position);
+
+		Vector3 newPos = prevBodyPart.position;
+		newPos.y = HeadPart.position.y;
+
+		float T = dis / minDistance * movementSpeed;
+
+		transform.position = Vector3.Lerp (transform.position, newPos, T);
+		transform.rotation = Quaternion.Slerp (transform.rotation, prevBodyPart.rotation, T);
+	}
+
+	// check the distance bewteen two vecotrs to see if they are considered equal
 	public bool V3Equal(Vector3 a, Vector3 b){
 		return Vector3.Distance(a , b) < movementSpeed;
 	}
 
-	// store the data related to when should the body part take a different direction
-	public class turnData {
-		Vector3 turnPos;
-		KeyCode direcKey;
-
-		public turnData(Vector3 tPos, KeyCode pressedKey){
-			turnPos = tPos;
-			direcKey = pressedKey;
-		}
-
-		public Vector3 getTurnPos(){
-			return turnPos;
-		}
-
-		public KeyCode getDirecKey(){
-			return direcKey;
-		}
-	}
-
+	// check if the head hit one of the snake body parts
 	void OnTriggerEnter(Collider col)
 	{
 		if(col.transform.tag.Equals("snakeHead")){

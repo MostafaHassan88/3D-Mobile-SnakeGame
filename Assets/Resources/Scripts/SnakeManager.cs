@@ -12,19 +12,21 @@ public class SnakeManager : MonoBehaviour {
 	public GameObject bodyPartPrefab;
 	public Text txtScore;
 
-	List<Vector3> spawnPos = new List<Vector3>();
+	List<Vector3> fruitSpawnPositions = new List<Vector3>();
 
 	// Use this for initialization
 	void Start () {
 		InvokeRepeating ("moveTheSnake", 0, 0.01f);
+		setFruitSpawnPositions ();
+		spawnFruit ();
+	}
 
+	private void setFruitSpawnPositions(){
 		for (int x = -18; x < 19; x++) {
 			for (int z = -18; z < 19; z++) {
-				spawnPos.Add (new Vector3 (x, 0.2f, z));
+				fruitSpawnPositions.Add (new Vector3 (x, 0.2f, z));
 			}
 		} 
-
-		spawnFruit (spawnPos);
 	}
 	
 	// Update is called once per frame
@@ -38,8 +40,8 @@ public class SnakeManager : MonoBehaviour {
 		isGameOver = true;
 	}
 
-	private void spawnFruit(List<Vector3> positions){
-		List<Vector3> copyPos = new List<Vector3> (positions);
+	private void spawnFruit(){
+		List<Vector3> copyPos = new List<Vector3> (fruitSpawnPositions);
 		for (int i = 0; i < transform.childCount; i++) {
 			copyPos.RemoveAll (Pos=> Vector3.Distance(Pos , transform.position) < 1);
 		}
@@ -51,12 +53,14 @@ public class SnakeManager : MonoBehaviour {
 
 	}
 
+	// when the snake eats a fruit we add the score and spawn a new fruit and a new snake body part
 	public void snakeAteFruit(int fruitScore){
 		txtScore.text = (int.Parse (txtScore.text) + fruitScore).ToString();
-		spawnFruit (spawnPos);
+		spawnFruit ();
 		addSnakeBodyPart ();
 	}
 
+	// create a new snake body part and add a reference to the part before it 
 	public void addSnakeBodyPart(){
 		Transform prevPart = snakeBodyParts [snakeBodyParts.Count - 1].transform;
 
