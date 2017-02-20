@@ -5,17 +5,29 @@ using UnityEngine.UI;
 using System;
 
 public class SnakeManager : MonoBehaviour {
+	bool isGameOver = false;
 	public GameObject gameOver, highScore;
+	public PauseMenu pauseMenu;
 	public GameObject bodyPartPrefab;
 	public Text txtScore;
 	public ObstacleManager oManager;
+	AudioManager audioManager;
 	List<Vector3> fruitSpawnPositions = new List<Vector3>();
 
 	// Use this for initialization
 	void Start () {
+		audioManager = AudioManager.Instance;
+//		setMusicTransform ();
 		setFruitSpawnPositions ();
 		spawnFruit ();
+		InvokeRepeating ("handleSnakeMovement", 0, 0.02f);
 	}
+
+//	private void setMusicTransform(){
+//		Transform musicTransform = GameObject.Find ("musicPref").transform;
+//		musicTransform.SetParent (Camera.main.transform);
+//		musicTransform.position = new Vector3 (0,0,0);
+//	}
 
 	// populates the fruit spawn positions array 
 	private void setFruitSpawnPositions(){
@@ -28,7 +40,24 @@ public class SnakeManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+		if (Input.GetKeyUp (KeyCode.Escape)) {
+			pauseMenu.pauseGame ();
+		}
+	}
+
+	// synchronize movement of all body parts
+	private void handleSnakeMovement(){
+		if (isGameOver) {
+			CancelInvoke ("handleSnakeMovement");
+		} else {
+			for (int i = 0; i < transform.childCount; i++) {
+				if (transform.GetChild (i).GetComponent<SnakeHead> () != null) {
+					transform.GetChild (i).GetComponent<SnakeHead> ().handleHeadMovement ();
+				} else {
+					transform.GetChild (i).GetComponent<SnakeBodyPart> ().handleBodyMovement();
+				}
+			}
+		}
 	}
 
 	// called when ever the snake hit the wall to activate the gameOver Screen
@@ -36,9 +65,11 @@ public class SnakeManager : MonoBehaviour {
 		int score = int.Parse(txtScore.text);
 		if (PlayerPrefs.GetInt ("HighScore", 0) < score) {
 			PlayerPrefs.SetInt ("HighScore", score);
+			audioManager.playHighScore ();
 			highScore.SetActive (true);
 			highScore.transform.GetChild (0).GetComponent<Text> ().text = score.ToString ();
 		} else {
+			audioManager.playYouLose ();
 			gameOver.SetActive (true);
 		}
 	}
@@ -47,7 +78,7 @@ public class SnakeManager : MonoBehaviour {
 	private void spawnFruit(){
 		List<Vector3> copyPos = new List<Vector3> (fruitSpawnPositions);
 		for (int i = 0; i < transform.childCount; i++) {
-			copyPos.RemoveAll (Pos=> Vector3.Distance(Pos , transform.position) < 1);
+			copyPos.RemoveAll (Pos=> Pos == transform.GetChild(i).position);
 		}
 			
 		GameObject fruitObj = Instantiate(Resources.Load<GameObject>("Prefabs/Fruit/Apple"));
@@ -59,6 +90,7 @@ public class SnakeManager : MonoBehaviour {
 	// when the snake eats a fruit we add the score and spawn a new fruit and a new snake body part
 	public void snakeAteFruit(int fruitScore){
 		int score = int.Parse (txtScore.text) + fruitScore;
+		audioManager.playAppleEat ();
 		txtScore.text = score.ToString();
 		checkAndSpawnObstacle (score);
 		spawnFruit ();

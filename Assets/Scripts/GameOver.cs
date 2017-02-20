@@ -16,10 +16,12 @@ public class GameOver : MonoBehaviour {
 	}
 
 	public void playAgain(){
+		AudioManager.Instance.playTab ();
 		SceneManager.LoadScene ("GameScene");
 	}
 
 	public void mainMenu(){
+		AudioManager.Instance.playTab ();
 		SceneManager.LoadScene ("MainMenu");
 	}
 }

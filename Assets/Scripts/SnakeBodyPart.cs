@@ -18,7 +18,9 @@ public class SnakeBodyPart : MonoBehaviour {
 		getEndPos ();
 	}
 
-	void Update () {
+	void Update () {}
+
+	public void handleBodyMovement(){
 		if (transform.position == endPos) {
 			prevPos = endPos;
 			getEndPos();
