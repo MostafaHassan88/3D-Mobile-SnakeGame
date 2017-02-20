@@ -17,17 +17,10 @@ public class SnakeManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		audioManager = AudioManager.Instance;
-//		setMusicTransform ();
 		setFruitSpawnPositions ();
 		spawnFruit ();
 		InvokeRepeating ("handleSnakeMovement", 0, 0.02f);
 	}
-
-//	private void setMusicTransform(){
-//		Transform musicTransform = GameObject.Find ("musicPref").transform;
-//		musicTransform.SetParent (Camera.main.transform);
-//		musicTransform.position = new Vector3 (0,0,0);
-//	}
 
 	// populates the fruit spawn positions array 
 	private void setFruitSpawnPositions(){
@@ -97,6 +90,7 @@ public class SnakeManager : MonoBehaviour {
 		addSnakeBodyPart ();
 	}
 
+	// spawn Obstacles at fixed position and fixed score
 	private void checkAndSpawnObstacle(int score){
 		if(score >= 45 && oManager.canSpawn1stObs){
 			fruitSpawnPositions.RemoveAll (Pos => Pos.x < -9 && Pos.x > -11 && Pos.z < 1 && Pos.z > -1);
